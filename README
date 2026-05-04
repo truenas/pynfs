@@ -30,6 +30,30 @@ You can prepare both versions for use with
 which will create auto-generated files and compile any shared libraries
 in place.
 
+Install as a Python distribution (TrueNAS fork)
+-----------------------------------------------
+
+The repository root ships a `pyproject.toml` that exposes the v4.1+ test
+bench and the SunRPC stack as a single installable distribution named
+`pynfs`.  The build hook regenerates the XDR Python bindings from the
+bundled `.x` files automatically.
+
+	pip install .                  # regular install
+	pip install -e .               # editable install for local hacking
+	pip install '.[gss]'           # also pulls in python-gssapi for Kerberos
+
+After installation the following imports work from any cwd:
+
+	import nfs4lib, nfs_ops
+	import nfs4client
+	import xdrdef.nfs4_const, xdrdef.nfs4_type
+	import rpc.rpc, rpc.security
+	from server41tests.environment import Environment
+
+The legacy `nfs4.0/` tree is intentionally not part of the installable
+distribution because it would collide with the v4.1+ top-level module
+names; run it in-place if you need it.
+
 For more details about 4.0 and 4.1 testing, see nfs4.0/README and
 nfs4.1/README, respectively.  For information about automatic code
 generation from an XDR file, see xdr/README.

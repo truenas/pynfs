@@ -1,0 +1,123 @@
+[build-system]
+requires = ["setuptools>=64", "wheel", "ply"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pynfs"
+version = "0.4.0"
+description = "NFS protocol library and v4.x server test suite (TrueNAS fork)"
+readme = "README"
+license = "GPL-2.0-only"
+requires-python = ">=3.9"
+authors = [
+    { name = "Fred Isaman", email = "iisaman@citi.umich.edu" },
+]
+maintainers = [
+    { name = "Calum Mackay", email = "calum.mackay@oracle.com" },
+    { name = "iXsystems", email = "developers@ixsystems.com" },
+]
+keywords = ["nfs", "nfs4", "rpc", "xdr", "filesystem", "testing"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Testing",
+    "Topic :: System :: Filesystems",
+    "Topic :: System :: Networking",
+]
+dependencies = [
+    # ply is needed at runtime so that xdrgen can be re-run against modified
+    # .x files without reinstalling.
+    "ply",
+    # xdrlib3 ships the Packer/Unpacker pair the rpc & nfs stacks build on.
+    # It replaces the stdlib xdrlib that was removed in Python 3.13.
+    "xdrlib3",
+]
+
+[project.optional-dependencies]
+# Kerberos / RPCSEC_GSS support.  Requires libkrb5-dev (or the equivalent
+# devel package) and a working Python gssapi at install time.
+gss = ["gssapi"]
+
+[project.urls]
+Homepage = "https://linux-nfs.org/wiki/index.php/Pynfs"
+Source   = "https://github.com/truenas/pynfs"
+Upstream = "https://git.linux-nfs.org/?p=cdmackay/pynfs.git"
+
+# ---------------------------------------------------------------------------
+# Source layout notes
+#
+# pynfs is built from two sibling source roots in this repo:
+#
+#   nfs4.1/   -> the v4.x-and-above test bench (nfs4lib, nfs_ops, nfs4client,
+#                xdrdef/, server41tests/, client41tests/, ...)
+#   rpc/      -> the standalone SunRPC + RPCSEC_GSS stack
+#
+# Everything is exposed as TOP-LEVEL packages and modules because the in-tree
+# code consistently uses bare imports (e.g. `import nfs4lib`,
+# `import xdrdef.nfs4_const`, `import rpc.rpc as rpc`).  Re-namespacing
+# under `pynfs.*` would mean rewriting hundreds of imports across the test
+# suite, which is intentionally out of scope here.
+#
+# The legacy `nfs4.0/` tree is intentionally NOT shipped: its top-level
+# module names (xdrdef, servertests, nfs4lib, nfs_ops, ...) would collide
+# with the v4.1+ ones.  Use that tree in-place if you need it.
+# ---------------------------------------------------------------------------
+
+[tool.setuptools]
+include-package-data = true
+packages = [
+    "xdrdef",
+    "server41tests",
+    "client41tests",
+    "rpc",
+]
+py-modules = [
+    # NFSv4 protocol/library code
+    "nfs4lib",
+    "nfs_ops",
+    "nfs4client",
+    "nfs4server",
+    "nfs4state",
+    "nfs4commoncode",
+    "nfs4proxy",
+    # NFSv3 client (used for ancillary mount/umount work)
+    "nfs3client",
+    # Test-bench helpers and shared utilities
+    "block",
+    "config",
+    "dataserver",
+    "fs",
+    "fs_base",
+    "locking",
+    "errorparser",
+    "errorfunctions",
+    "testmod",
+    # CLI entry points (kept as top-level so `python -m testserver` works)
+    "testserver",
+    "testclient",
+    # In-tree sys.path bootstrap; harmless after install (it just no-ops
+    # because the modules it would expose are already importable).
+    "use_local",
+]
+
+[tool.setuptools.package-dir]
+# Empty key is the default base for unprefixed packages and py-modules.
+"" = "nfs4.1"
+# rpc/ lives at the project root, not inside nfs4.1/.
+"rpc" = "rpc"
+
+[tool.setuptools.package-data]
+# Ship the .x sources alongside the generated stubs so consumers can
+# regenerate the bindings (via `python -m xdrgen <file>.x`) if they
+# patch a protocol definition.
+xdrdef = ["*.x", "*.x.diff"]
+rpc    = ["*.x"]
+
+[tool.setuptools.exclude-package-data]
+# Belt-and-braces: don't ship parser scratch files if a build leaves them
+# behind in the source tree.
+"*" = ["parser.out", "parsetab.py"]
