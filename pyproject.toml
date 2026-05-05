@@ -86,9 +86,17 @@ py-modules = [
     "nfs4proxy",
     # NFSv3 client (used for ancillary mount/umount work)
     "nfs3client",
-    # Test-bench helpers and shared utilities
+    # Test-bench helpers and shared utilities.  Note: the original
+    # pynfs source has a top-level ``config.py``.  We rename it to
+    # ``_pynfs_config`` on install to avoid collisions with consumer
+    # ``sys.path`` entries that may also have a top-level ``config``
+    # module (e.g. the TrueNAS middleware test runner generates a
+    # ``tests/config.py`` before invoking pytest).  pynfs's own
+    # internals import from ``_pynfs_config`` directly; the unshipped
+    # source ``config.py`` is kept as a compatibility shim that
+    # re-exports from ``_pynfs_config`` for in-tree dev use.
     "block",
-    "config",
+    "_pynfs_config",
     "dataserver",
     "fs",
     "fs_base",

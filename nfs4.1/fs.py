@@ -703,7 +703,7 @@ class StubFS_Mem(FileSystem):
     def sync(self, obj, how):
         return FILE_SYNC4
 
-from config import ServerPerClientConfig, ConfigAction
+from _pynfs_config import ServerPerClientConfig, ConfigAction
 
 class ConfigObj(FSObject):
     def associate(self, configline):

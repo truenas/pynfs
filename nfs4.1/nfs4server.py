@@ -19,7 +19,7 @@ import logging
 from nfs4state import find_state
 from nfs4commoncode import CompoundState, encode_status, encode_status_by_name
 from fs import RootFS, ConfigFS
-from config import ServerConfig, ServerPerClientConfig, OpsConfigServer, Actions
+from _pynfs_config import ServerConfig, ServerPerClientConfig, OpsConfigServer, Actions
 
 logging.basicConfig(level=logging.WARN,
                     format="%(levelname)-7s:%(name)s:%(message)s")
